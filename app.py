@@ -13,12 +13,14 @@ class Task(db.Model):
 #Home Route
 @app.route("/")
 def home():
-	return render_template("home.html")
+	tasks = Task.query.all()
+	return render_template("home.html", tasks=tasks)
 
 #Add Task Route
 @app.route("/add", methods=["POST"])
 def add():
 	task_content = request.form.get("content")
+	print("Received task:", task_content)
 	if task_content:
 		new_task = Task(content=task_content)
 		db.session.add(new_task)
@@ -26,4 +28,4 @@ def add():
 	return redirect(url_for("home"))
 
 if __name__ == "__main__":
-	app.run(debug=True)
+    app.run(debug=True)
