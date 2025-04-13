@@ -16,6 +16,7 @@
 	<ul>
 		{% for task in tasks %}
 			<li>{{ task.content }}</li>
+			<a href="delete/{{ task.id }}">Delete</a>
 		{% else %}
 			<li>No task yet.</li>
 		{% endfor %}
