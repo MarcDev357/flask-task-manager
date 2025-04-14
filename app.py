@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///task.db'
 db = SQLAlchemy(app)
+app.secret_key = 'P@55word'
 
 #Create the database model
 class Task(db.Model):
@@ -20,11 +21,11 @@ def home():
 @app.route("/add", methods=["POST"])
 def add():
 	task_content = request.form.get("content")
-	print("Received task:", task_content)
 	if task_content:
 		new_task = Task(content=task_content)
 		db.session.add(new_task)
 		db.session.commit()
+		flash('Task Added Successfully!')
 	return redirect(url_for("home"))
 
 #Delete Task
@@ -33,6 +34,7 @@ def delete(id):
 	task_to_delete = Task.query.get_or_404(id)
 	db.session.delete(task_to_delete)
 	db.session.commit()
+	flash('Task Deleted Successfully!')
 	return redirect(url_for("home"))
 
 if __name__ == "__main__":
