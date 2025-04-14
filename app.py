@@ -10,6 +10,7 @@ app.secret_key = 'P@55word'
 class Task(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	content = db.Column(db.String(200), nullable=False)
+	completed = db.Column(db.Boolean, default=False)
 
 #Home Route
 @app.route("/")
@@ -35,6 +36,15 @@ def delete(id):
 	db.session.delete(task_to_delete)
 	db.session.commit()
 	flash('Task Deleted Successfully!')
+	return redirect(url_for("home"))
+
+# Complete Task
+@app.route("/complete/<int:id>")
+def complete(id):
+	task = Task.query.get_or_404(id)
+	task.completed = not task.completed
+	db.session.commit()
+	flash('Task updated successfull!')
 	return redirect(url_for("home"))
 
 if __name__ == "__main__":
