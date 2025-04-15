@@ -1,0 +1,22 @@
+/* Hover animations */
+.btn-outline-secondary:hover,
+.btn-outline-danger:hover {
+  transform: scale(1.05);
+  transition: 0.2s ease-in-out;
+}
+
+/* Responsive tweaks */
+@media (max-width: 576px) {
+  .form-check-label {
+    font-size: 0.95rem;
+  }
+
+  .btn {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .modal-content {
+    font-size: 0.95rem;
+  }
+}

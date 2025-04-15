@@ -19,21 +19,35 @@ class Task(db.Model):
 #Home Route
 @app.route("/")
 def home():
-	today = date.today()
+    filter_option = request.args.get("filter")
+    today = date.today()
 
-	is_overdue = case((Task.due_date < today, True), else_=False)
+    query = Task.query
 
-	tasks = Task.query.order_by(
-		Task.completed.asc(),         # Incomplete first
-		is_overdue.desc(),            # Overdue first
-		Task.due_date.asc().nullslast(),  # Sooner due date first
-		Task.priority.desc()          # High → Low
-	).all()
+    if filter_option == "overdue":
+        query = query.filter(Task.completed == False, Task.due_date < today)
+    elif filter_option == "today":
+        query = query.filter(Task.completed == False, Task.due_date == today)
+    elif filter_option == "upcoming":
+        query = query.filter(Task.completed == False, Task.due_date > today)
+    elif filter_option == "completed":
+        query = query.filter(Task.completed == True)
+    elif filter_option == "high":
+        query = query.filter(Task.priority == 3)
+    elif filter_option == "medium":
+        query = query.filter(Task.priority == 2)
+    elif filter_option == "low":
+        query = query.filter(Task.priority == 1)
 
-	return render_template("home.html", tasks=tasks, current_date=today)
+    tasks = query.order_by(
+        Task.completed.asc(),
+        Task.priority.desc(),
+        Task.due_date.asc().nullslast()
+    ).all()
+
+    return render_template("home.html", tasks=tasks, current_date=today)
 
 #Add Task Route
-@app.route("/add", methods=["POST"])
 @app.route("/add", methods=["POST"])
 def add():
 	task_content = request.form.get("content")
@@ -41,13 +55,6 @@ def add():
 	priority = int(request.form.get("priority", 1))
 
 	due_date = datetime.strptime(due_date_str, "%Y-%m-%d").date() if due_date_str else None
-
-	print("=== New Task Debug ===")
-	print("Content:", task_content)
-	print("Due Date (str):", due_date_str)
-	print("Due Date (parsed):", due_date)
-	print("Priority (int):", priority)
-	print("======================")
 
 	if task_content:
 		new_task = Task(
@@ -78,6 +85,20 @@ def complete(id):
 	db.session.commit()
 	flash('Task updated successfull!')
 	return redirect(url_for("home"))
+
+@app.route("/edit/<int:id>", methods=["POST"])
+def edit(id):
+    task = Task.query.get_or_404(id)
+
+    task.content = request.form.get("content")
+    due_date_str = request.form.get("due_date")
+    task.due_date = datetime.strptime(due_date_str, "%Y-%m-%d").date() if due_date_str else None
+    task.priority = int(request.form.get("priority"))
+    
+    db.session.commit()
+    flash("Task updated successfully!")
+    return redirect(url_for("home"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
