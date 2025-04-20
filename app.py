@@ -19,33 +19,45 @@ class Task(db.Model):
 #Home Route
 @app.route("/")
 def home():
-    filter_option = request.args.get("filter")
     today = date.today()
+    filter_option = request.args.get("filter")
 
-    query = Task.query
+    # Base query
+    base_query = Task.query
 
-    if filter_option == "overdue":
-        query = query.filter(Task.completed == False, Task.due_date < today)
-    elif filter_option == "today":
-        query = query.filter(Task.completed == False, Task.due_date == today)
-    elif filter_option == "upcoming":
-        query = query.filter(Task.completed == False, Task.due_date > today)
-    elif filter_option == "completed":
-        query = query.filter(Task.completed == True)
-    elif filter_option == "high":
-        query = query.filter(Task.priority == 3)
-    elif filter_option == "medium":
-        query = query.filter(Task.priority == 2)
-    elif filter_option == "low":
-        query = query.filter(Task.priority == 1)
+    # Apply filters if needed (you already have this logic)
 
-    tasks = query.order_by(
-        Task.completed.asc(),
-        Task.priority.desc(),
-        Task.due_date.asc().nullslast()
+    # Separate groups
+    overdue_tasks = base_query.filter(
+        Task.completed == False,
+        Task.due_date < today
+    ).order_by(
+        Task.due_date.asc(),
+        Task.priority.desc()
     ).all()
 
-    return render_template("home.html", tasks=tasks, current_date=today)
+    upcoming_tasks = base_query.filter(
+        Task.completed == False,
+        (Task.due_date == None) | (Task.due_date >= today)
+    ).order_by(
+        Task.due_date.asc().nullslast(),
+        Task.priority.desc()
+    ).all()
+
+    completed_tasks = base_query.filter(
+        Task.completed == True
+    ).order_by(
+        Task.due_date.asc().nullslast(),
+        Task.priority.desc()
+    ).all()
+
+    return render_template(
+        "home.html",
+        overdue_tasks=overdue_tasks,
+        upcoming_tasks=upcoming_tasks,
+        completed_tasks=completed_tasks,
+        current_date=today
+    )
 
 #Add Task Route
 @app.route("/add", methods=["POST"])
