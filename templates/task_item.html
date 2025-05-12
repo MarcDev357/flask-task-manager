@@ -12,6 +12,9 @@
             <small class="text-danger ms-2">(Overdue: {{ task.due_date.strftime('%b %d') }})</small>
           {% else %}
             <small class="text-muted ms-2">(Due: {{ task.due_date.strftime('%b %d') }})</small>
+            {% if task.due_time %}
+              <small class="text-muted ms-2">at {{ task.due_time.strftime('%I:%M %p') }}</small>
+            {% endif %}
           {% endif %}
         {% endif %}
   
@@ -57,6 +60,10 @@
             <div class="mb-3">
               <input type="date" name="due_date" class="form-control" value="{{ task.due_date }}">
             </div>
+            <div class="mb-3">
+              <input type="time" name="due_time" class="form-control"
+                     value="{{ task.due_time.strftime('%H:%M') if task.due_time }}">
+            </div>            
             <div class="mb-3">
               <select name="priority" class="form-select">
                 <option value="1" {% if task.priority == 1 %}selected{% endif %}>Low</option>
